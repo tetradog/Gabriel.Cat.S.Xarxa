@@ -2,6 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Company>Gabriel.Cat.Developert</Company>
+    <Authors>Gabriel.Cat.Developer</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>GNUV3</Copyright>
+    <PackageProjectUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Gabriel.Cat.S.Seguretat" Version="1.0.2.1" />
+  </ItemGroup>
 
 </Project>
