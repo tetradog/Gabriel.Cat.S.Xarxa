@@ -13,6 +13,7 @@ namespace Gabriel.Cat.S.Xarxa.BDSync
 
         public abstract List<Change> GetChanges(DateTime lastSync);
         public abstract void SetChanges(IList<Change> changes);
+        public abstract bool Sync();
         
     }
 }

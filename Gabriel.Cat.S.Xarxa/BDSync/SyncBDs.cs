@@ -19,17 +19,26 @@ namespace Gabriel.Cat.S.Xarxa.BDSync
             List<BD.Change> changesBD;
             if (syncronitzed)
             {
-                //obtengo los cambios de cada BD
-                for(int i=0;i<BDs.Count;i++)
+                for (int i = 0; i < BDs.Count; i++)
                 {
+                    BDs[i].Sync();
+                }
+                //obtengo los cambios de cada BD
+                for (int i = 0; i < BDs.Count; i++)
+                {
+                    BDs[i].Sync();
                     changesBD = BDs[i].GetChanges(LastSync);
-                    for(int j = 0; j < BDs.Count; j++)
+                    for (int j = 0; j < BDs.Count; j++)
                     {
                         if (i != j)
                         {
                             BDs[j].SetChanges(changesBD);
                         }
                     }
+                }
+                for (int i = 0; i < BDs.Count; i++)
+                {
+                    BDs[i].Sync();
                 }
                 LastSync = DateTime.UtcNow;
             }
