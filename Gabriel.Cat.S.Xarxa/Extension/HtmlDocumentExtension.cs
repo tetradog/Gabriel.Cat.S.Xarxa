@@ -3,18 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Gabriel.Cat.S.Extension
 {
     public static class HtmlDocumentExtension
     {
-        public static HtmlDocument LoadUrl(this HtmlDocument document, string url)
+        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, string url)
         {
-            return document.LoadUrl(new Uri(url));
+            return await document.LoadUrl(new Uri(url));
         }
-        public static HtmlDocument LoadUrl(this HtmlDocument document, Uri url)
+        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, Uri url)
         {
-            return  document.LoadString(url.DownloadString());
+            return  document.LoadString(await url.DownloadString());
         }
 
         public static HtmlDocument LoadString(this HtmlDocument document, string htmlDoc)
