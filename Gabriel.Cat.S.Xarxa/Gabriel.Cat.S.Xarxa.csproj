@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Company>Gabriel.Cat.Developer</Company>
     <Authors>Gabriel.Cat.Developer</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -10,13 +10,21 @@
     <PackageProjectUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gabriel.Cat.S.Binaris" Version="1.0.5-preview1.0.9" />
-    <PackageReference Include="Gabriel.Cat.S.Seguretat" Version="1.0.2.2-Preview1.0.4" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.44.0.1874" />
+    <PackageReference Include="Gabriel.Cat.S.Utilitats" Version="1.2.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
     <PackageReference Include="sqlite" Version="3.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

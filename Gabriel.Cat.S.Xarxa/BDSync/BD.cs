@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gabriel.Cat.S.Xarxa.BDSync
 {
-    public abstract class BD
+    internal abstract class BD
     {
         public class Change {
         

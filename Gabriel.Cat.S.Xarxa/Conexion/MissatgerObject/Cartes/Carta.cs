@@ -5,7 +5,7 @@ using Gabriel.Cat.S;
 using Gabriel.Cat.S.Utilitats;
 namespace Gabriel.Cat.S.Xarxa.Cartes
 {
-   abstract class Carta
+    internal abstract class Carta
     {
         static GenIdInt genId = new GenIdInt();
         int idIntern;

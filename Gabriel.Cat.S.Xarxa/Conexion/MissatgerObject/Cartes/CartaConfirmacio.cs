@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gabriel.Cat.S.Xarxa.Cartes
 {
-    class CartaConfirmacio:Carta
+    internal class CartaConfirmacio:Carta
     {
         public enum Tipus
         {

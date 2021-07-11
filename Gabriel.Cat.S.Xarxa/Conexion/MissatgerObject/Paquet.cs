@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Gabriel.Cat.S.Xarxa
 {
-    class Paquet : IComparable, IComparable<Paquet>, IClauUnicaPerObjecte
+    internal class Paquet : IComparable, IComparable<Paquet>, IClauUnicaPerObjecte
     {
         public const int LENGHTPARTPAQUET = 120 * 1024;//120KB
 

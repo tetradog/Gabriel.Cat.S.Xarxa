@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Gabriel.Cat.S.Xarxa.Cartes
 {
-    class CartaPartPaquet:Carta
+    internal class CartaPartPaquet:Carta
     {
         IdUnico idPaquet;
         int posicioPart;

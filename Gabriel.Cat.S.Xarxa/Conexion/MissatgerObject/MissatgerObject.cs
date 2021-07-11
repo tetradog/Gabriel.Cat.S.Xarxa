@@ -9,8 +9,8 @@ using Gabriel.Cat.S.Utilitats;
 
 namespace Gabriel.Cat.S.Xarxa
 {
-    delegate void PaquetRebutEventHandler(MissatgerObject missatget, Paquet paquet);
-    class MissatgerObject
+    internal delegate void PaquetRebutEventHandler(MissatgerObject missatget, Paquet paquet);
+    internal class MissatgerObject
     {
         public  int PortEnviar = 9087;
         public  int PortRebre = 9085;

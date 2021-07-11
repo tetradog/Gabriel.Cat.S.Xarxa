@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gabriel.Cat.S.Xarxa.BDSync
 {
-    public class BDLocal : BD
+    internal class BDLocal : BD
     {
         public override List<Change> GetChanges(DateTime lastSync)
         {

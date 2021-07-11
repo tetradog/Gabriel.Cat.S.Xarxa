@@ -1,6 +1,6 @@
 ﻿namespace Gabriel.Cat.S.Xarxa
 {
-    public class Usuario
+    internal class Usuario
     {
         public long Id { get; set; }
     }
