@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,13 +10,13 @@ namespace Gabriel.Cat.S.Extension
 {
     public static class HtmlDocumentExtension
     {
-        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, string url)
+        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, string url,IWebProxy proxy=default)
         {
-            return await document.LoadUrl(new Uri(url));
+            return await document.LoadUrl(new Uri(url),proxy);
         }
-        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, Uri url)
+        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, Uri url, IWebProxy proxy=default)
         {
-            return  document.LoadString(await url.DownloadString());
+            return  document.LoadString(await url.DownloadString(proxy));
         }
 
         public static HtmlDocument LoadString(this HtmlDocument document, string htmlDoc)
