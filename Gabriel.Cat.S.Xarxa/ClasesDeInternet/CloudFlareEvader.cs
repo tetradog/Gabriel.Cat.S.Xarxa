@@ -11,19 +11,21 @@ using Gabriel.Cat.S.Extension;
 
 using Jint;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 
 namespace Gabriel.Cat.S.Utilitats.ClasesDeInternet
 {
 
     //source:https://stackoverflow.com/questions/32425973/how-can-i-get-html-from-page-with-cloudflare-ddos-portection
-    public class CloudflareEvader
+    public static class CloudflareEvader
     {
+        static SortedList<string, WebClient> DicClients { get; set; } = new SortedList<string, WebClient>();
         /// <summary>
         /// Tries to return a webclient with the neccessary cookies installed to do requests for a cloudflare protected website.
         /// </summary>
         /// <param name="url">The page which is behind cloudflare's anti-dDoS protection</param>
         /// <returns>A WebClient object or null on failure</returns>
-        public static WebClient CreateBypassedWebClient(Uri uri)
+        public static WebClient CloudflareWebClient(Uri uri,bool getNewClient=false,bool waitIfExist=true)
         {
             const string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0";
 
@@ -42,103 +44,124 @@ namespace Gabriel.Cat.S.Utilitats.ClasesDeInternet
             HttpWebResponse cookieResp;
             CookieCollection cookiesParsed;
             WebClient modedWebClient;
+            HttpWebRequest req;
+            Engine JSEngine;
+            string html;
 
-            string html = string.Empty;
-            Engine JSEngine = new Engine(); //Use this JavaScript engine to compute the result.
-            //Download the original page
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(uri);
-            req.UserAgent = USERAGENT;
-            //Try to make the usual request first. If this fails with a 503, the page is behind cloudflare.
-            try
+            if(getNewClient && DicClients.ContainsKey(uri.Host))
             {
-                res = req.GetResponse();
-
-                using (var reader = new StreamReader(res.GetResponseStream()))
-                    html = reader.ReadToEnd();
-                response = new WebClient();
+                DicClients.Remove(uri.Host);
             }
-            catch (WebException ex) //We usually get this because of a 503 service not available.
+
+            if (!DicClients.ContainsKey(uri.Host))
             {
-                using (var reader = new StreamReader(ex.Response.GetResponseStream()))
-                    html = reader.ReadToEnd();
-                //If we get on the landing page, Cloudflare gives us a User-ID token with the cookie. We need to save that and use it in the next request.
-                coockieContainer = new CookieContainer();
-                //using a custom function because ex.Response.Cookies returns an empty set ALTHOUGH cookies were sent back.
-                initialCookies = GetAllCookiesFromHeader(ex.Response.Headers["Set-Cookie"], uri.Host);
-                foreach (Cookie init_cookie in initialCookies)
-                    coockieContainer.Add(init_cookie);
-
-                /* solve the actual challenge with a bunch of RegEx's. Copy-Pasted from the python scrapper version.*/
-                challenge = Regex.Match(html, "name=\"jschl_vc\" value=\"(\\w+)\"").Groups[1].Value;
-                challengePass = Regex.Match(html, "name=\"pass\" value=\"(.+?)\"").Groups[1].Value;
-
-                builder = Regex.Match(html, @"setTimeout\(function\(\){\s+(var t,r,a,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n").Groups[1].Value;
-                builder = Regex.Replace(builder, @"a\.value =(.+?) \+ .+?;", "$1");
-                builder = Regex.Replace(builder, @"\s{3,}[a-z](?: = |\.).+", "");
-
-                //Format the javascript..
-                builder = Regex.Replace(builder, @"[\n\\']", "");
-
-                //Execute it. 
-                solved = long.Parse(JSEngine.Execute(builder).GetCompletionValue().ToObject().ToString());
-                solved += uri.Host.Length; //add the length of the domain to it.
-
-                Debug.WriteLine("***** SOLVED CHALLENGE ******: " + solved);
-                Thread.Sleep(3000); //This sleeping IS requiered or cloudflare will not give you the token!!
-
-                //Retreive the cookies. Prepare the URL for cookie exfiltration.
-                cookieUrl = string.Format("{0}://{1}/cdn-cgi/l/chk_jschl", uri.Scheme, uri.Host);
-                uriBuilder = new UriBuilder(cookieUrl);
-                query = HttpUtility.ParseQueryString(uriBuilder.Query);
-                //Add our answers to the GET query
-                query["jschl_vc"] = challenge;
-                query["jschl_answer"] = solved.ToString();
-                query["pass"] = challengePass;
-                uriBuilder.Query = query.ToString();
-
-                //Create the actual request to get the security clearance cookie
-                cookieReq = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
-                cookieReq.AllowAutoRedirect = false;
-                cookieReq.CookieContainer = coockieContainer;
-                cookieReq.Referer = uri.AbsolutePath;
-                cookieReq.UserAgent = USERAGENT;
-                //We assume that this request goes through well, so no try-catch
-                cookieResp = (HttpWebResponse)cookieReq.GetResponse();
-                //The response *should* contain the security clearance cookie!
-                if (cookieResp.Cookies.Count != 0) //first check if the HttpWebResponse has picked up the cookie.
-                    foreach (Cookie cookie in cookieResp.Cookies)
-                        coockieContainer.Add(cookie);
-                else //otherwise, use the custom function again
+                html = string.Empty;
+                JSEngine = new Engine(); //Use this JavaScript engine to compute the result.
+                                         //Download the original page
+                req = (HttpWebRequest)WebRequest.Create(uri);
+                req.UserAgent = USERAGENT;
+                //Try to make the usual request first. If this fails with a 503, the page is behind cloudflare.
+                try
                 {
-                    //the cookie we *hopefully* received here is the cloudflare security clearance token.
-                    if (!Equals(cookieResp.Headers["Set-Cookie"], default))
-                    {
-                        cookiesParsed = GetAllCookiesFromHeader(cookieResp.Headers["Set-Cookie"], uri.Host);
-                        foreach (Cookie cookie in cookiesParsed)
-                            coockieContainer.Add(cookie);
-                    }
-                    else
-                    {
-                        //No security clearence? something went wrong.. return null.
-                        throw new Exception("MASSIVE ERROR: COULDN'T GET CLOUDFLARE CLEARANCE!");
+                    res = req.GetResponse();
 
-                    }
+                    using (var reader = new StreamReader(res.GetResponseStream()))
+                        html = reader.ReadToEnd();
+                    response = new WebClient();
                 }
-                //Create a custom webclient with the two cookies we already acquired.
-                modedWebClient = new WebClientEx(coockieContainer);
-                modedWebClient.Headers.Add("User-Agent", USERAGENT);
-                modedWebClient.Headers.Add("Referer", uri.AbsolutePath);
-                response = modedWebClient;
+                catch (WebException ex) //We usually get this because of a 503 service not available.
+                {
+                    using (StreamReader reader = new StreamReader(ex.Response.GetResponseStream()))
+                        html = reader.ReadToEnd();
+                    //If we get on the landing page, Cloudflare gives us a User-ID token with the cookie. We need to save that and use it in the next request.
+                    coockieContainer = new CookieContainer();
+                    //using a custom function because ex.Response.Cookies returns an empty set ALTHOUGH cookies were sent back.
+                    initialCookies = GetAllCookiesFromHeader(ex.Response.Headers["Set-Cookie"], uri.Host);
+                    foreach (Cookie initCookie in initialCookies)
+                        coockieContainer.Add(initCookie);
+
+                    /* solve the actual challenge with a bunch of RegEx's. Copy-Pasted from the python scrapper version.*/
+                    challenge = Regex.Match(html, "name=\"jschl_vc\" value=\"(\\w+)\"").Groups[1].Value;
+                    challengePass = Regex.Match(html, "name=\"pass\" value=\"(.+?)\"").Groups[1].Value;
+
+                    builder = Regex.Match(html, @"setTimeout\(function\(\){\s+(var t,r,a,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n").Groups[1].Value;
+                    builder = Regex.Replace(builder, @"a\.value =(.+?) \+ .+?;", "$1");
+                    builder = Regex.Replace(builder, @"\s{3,}[a-z](?: = |\.).+", "");
+
+                    //Format the javascript..
+                    builder = Regex.Replace(builder, @"[\n\\']", "");
+
+                    //Execute it. 
+                    solved = long.Parse(JSEngine.Execute(builder).GetCompletionValue().ToObject().ToString());
+                    solved += uri.Host.Length; //add the length of the domain to it.
+
+                    Debug.WriteLine("***** SOLVED CHALLENGE ******: " + solved);
+                    WaitCloudflare(); //This sleeping IS requiered or cloudflare will not give you the token!!
+
+                    //Retreive the cookies. Prepare the URL for cookie exfiltration.
+                    cookieUrl = string.Format("{0}://{1}/cdn-cgi/l/chk_jschl", uri.Scheme, uri.Host);
+                    uriBuilder = new UriBuilder(cookieUrl);
+                    query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                    //Add our answers to the GET query
+                    query["jschl_vc"] = challenge;
+                    query["jschl_answer"] = solved.ToString();
+                    query["pass"] = challengePass;
+                    uriBuilder.Query = query.ToString();
+
+                    //Create the actual request to get the security clearance cookie
+                    cookieReq = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
+                    cookieReq.AllowAutoRedirect = false;
+                    cookieReq.CookieContainer = coockieContainer;
+                    cookieReq.Referer = uri.AbsolutePath;
+                    cookieReq.UserAgent = USERAGENT;
+                    //We assume that this request goes through well, so no try-catch
+                    cookieResp = (HttpWebResponse)cookieReq.GetResponse();
+                    //The response *should* contain the security clearance cookie!
+                    if (cookieResp.Cookies.Count != 0) //first check if the HttpWebResponse has picked up the cookie.
+                        foreach (Cookie cookie in cookieResp.Cookies)
+                            coockieContainer.Add(cookie);
+                    else //otherwise, use the custom function again
+                    {
+                        //the cookie we *hopefully* received here is the cloudflare security clearance token.
+                        if (!Equals(cookieResp.Headers["Set-Cookie"], default))
+                        {
+                            cookiesParsed = GetAllCookiesFromHeader(cookieResp.Headers["Set-Cookie"], uri.Host);
+                            foreach (Cookie cookie in cookiesParsed)
+                                coockieContainer.Add(cookie);
+                        }
+                        else
+                        {
+                            //No security clearence? something went wrong...
+                            throw new Exception("MASSIVE ERROR: COULDN'T GET CLOUDFLARE CLEARANCE!");
+
+                        }
+                    }
+                    //Create a custom webclient with the two cookies we already acquired.
+                    modedWebClient = new WebClientEx(coockieContainer);
+                    modedWebClient.Headers.Add("User-Agent", USERAGENT);
+                    modedWebClient.Headers.Add("Referer", uri.AbsolutePath);
+                    response = modedWebClient;
+                }
+                DicClients.Add(uri.Host, response);
             }
-            return response;
+            else if (waitIfExist)
+            {
+                WaitCloudflare();
+            }
+            return DicClients[uri.Host];
+        }
+
+        static void WaitCloudflare()
+        {
+            Thread.Sleep(3000);
         }
 
         /* Credit goes to https://stackoverflow.com/questions/15103513/httpwebresponse-cookies-empty-despite-set-cookie-header-no-redirect 
            (user https://stackoverflow.com/users/541404/cameron-tinker) for these functions 
         */
-        public static CookieCollection GetAllCookiesFromHeader(string strHeader, string strHost)
+        static CookieCollection GetAllCookiesFromHeader(string strHeader, string strHost)
         {
-            ArrayList al = new ArrayList();
+            ArrayList al;
             CookieCollection cc = new CookieCollection();
             if (!string.IsNullOrEmpty(strHeader))
             {
@@ -148,7 +171,7 @@ namespace Gabriel.Cat.S.Utilitats.ClasesDeInternet
             return cc;
         }
 
-        private static ArrayList ConvertCookieHeaderToArrayList(string strCookHeader)
+        static ArrayList ConvertCookieHeaderToArrayList(string strCookHeader)
         {
             ArrayList al;
             string[] strCookTemp;
@@ -165,16 +188,16 @@ namespace Gabriel.Cat.S.Utilitats.ClasesDeInternet
                 if (strCookTemp[i].IndexOf("expires=", StringComparison.OrdinalIgnoreCase) > 0)
                 {
                     al.Add(strCookTemp[i] + "," + strCookTemp[i + 1]);
-                    i = i + 1;
+                    i++;
                 }
                 else
                     al.Add(strCookTemp[i]);
-                i = i + 1;
+                i++;
             }
             return al;
         }
 
-        private static CookieCollection ConvertCookieArraysToCookieCollection(ArrayList al, string strHost)
+        static CookieCollection ConvertCookieArraysToCookieCollection(ArrayList al, string strHost)
         {
             int intEachCookPartsCount;
             string strCNameAndCValue;
@@ -290,10 +313,11 @@ namespace Gabriel.Cat.S.Utilitats.ClasesDeInternet
 
         private void ReadCookies(WebResponse r)
         {
+            CookieCollection cookies;
             HttpWebResponse response = r as HttpWebResponse;
-            if (response != null)
+            if (!ReferenceEquals(response, null))
             {
-                CookieCollection cookies = response.Cookies;
+                cookies = response.Cookies;
                 CookieContainer.Add(cookies);
             }
         }

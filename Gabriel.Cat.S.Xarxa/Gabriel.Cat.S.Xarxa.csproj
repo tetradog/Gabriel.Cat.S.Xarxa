@@ -11,12 +11,12 @@
     <RepositoryUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <PackageReleaseNotes>Ahora añade soporte para cloudflare, cargar contenido protegido por ataques DDos es posible.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gabriel.Cat.S.Utilitats" Version="1.2.4" />
+    <PackageReference Include="Gabriel.Cat.S.Utilitats" Version="1.2.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
     <PackageReference Include="Jint" Version="2.11.58" />
     <PackageReference Include="sqlite" Version="3.13.0" />
