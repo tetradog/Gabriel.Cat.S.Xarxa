@@ -10,13 +10,13 @@ namespace Gabriel.Cat.S.Extension
 {
     public static class HtmlDocumentExtension
     {
-        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, string url,IWebProxy proxy=default)
+        public static HtmlDocument LoadUrl(this HtmlDocument document, string url,IWebProxy proxy=default)
         {
-            return await document.LoadUrl(new Uri(url),proxy);
+            return  document.LoadUrl(new Uri(url),proxy);
         }
-        public static async Task<HtmlDocument> LoadUrl(this HtmlDocument document, Uri url, IWebProxy proxy=default)
+        public static HtmlDocument LoadUrl(this HtmlDocument document, Uri url, IWebProxy proxy=default)
         {
-            return  document.LoadString(await url.DownloadString(proxy));
+            return  document.LoadString( url.DownloadString(proxy));
         }
 
         public static HtmlDocument LoadString(this HtmlDocument document, string htmlDoc)
