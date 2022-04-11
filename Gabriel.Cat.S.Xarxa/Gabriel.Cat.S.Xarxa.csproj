@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/tetradog/Gabriel.Cat.S.Xarxa</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <PackageReleaseNotes>Ahora añade soporte para cloudflare, cargar contenido protegido por ataques DDos es posible.</PackageReleaseNotes>
   </PropertyGroup>
 
